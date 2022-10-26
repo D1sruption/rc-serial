@@ -1,3 +1,5 @@
+import os
+import signal
 import threading
 import keyboard
 import time
@@ -32,12 +34,12 @@ def recoil_loop():
             if i % 2 == 0:
                 # this is the speed. lower '10' to increase speed. increase '10' to decrease speed
                 # perhaps can make this based on active gun? ie phantom shoots faster so need to pull down faster...
-                time.sleep(50/1000)
+                time.sleep(5/1000)
             else:
                 # FIRST: X-axis (POSITIVE = move right, NEGATIVE = move left)
                 # SECOND: Y-axis (POSITIVE = move down, NEGATIVE = move up)
                 # THIRD: unknown...something to do with mouse wheel
-                serial.write(pack('bbb', 1, 5, -1))
+                serial.write(pack('bbb', 1, 6, -1))
             i += 1
 
 
@@ -45,6 +47,9 @@ def state_loop():
     enabled = False
     while True:
         event = keyboard.read_event()
+        if event.event_type == keyboard.KEY_DOWN and event.name == 'f7':
+            print(f"Aborting!")
+            os.kill(os.getpid(), signal.SIGINT)
         if event.event_type == keyboard.KEY_DOWN and event.name == 'f6':
             if not enabled:
                 enabled = not enabled
