@@ -25,22 +25,29 @@ CheeseEnabled = threading.Event()
 RecoilState = threading.Event()
 
 
-def recoil_loop():
+def recoil_loop(data):
     while serial.is_open:
         RecoilState.wait()
 
-        i = 0
-        while serial.is_open and RecoilState.is_set():
-            if i % 2 == 0:
-                # this is the speed. lower '10' to increase speed. increase '10' to decrease speed
-                # perhaps can make this based on active gun? ie phantom shoots faster so need to pull down faster...
-                time.sleep(5/1000)
-            else:
-                # FIRST: X-axis (POSITIVE = move right, NEGATIVE = move left)
-                # SECOND: Y-axis (POSITIVE = move down, NEGATIVE = move up)
-                # THIRD: unknown...something to do with mouse wheel
-                serial.write(pack('bbb', 1, 6, -1))
-            i += 1
+        data = str(data).split(":")
+        x = int(float(data[0]))
+        y = int(float(data[2]))
+
+        if serial.is_open and RecoilState.is_set():
+            serial.write(pack('bbb', x, y, 0))
+
+        # i = 0
+        # while serial.is_open and RecoilState.is_set():
+        #     if i % 2 == 0:
+        #         # this is the speed. lower '10' to increase speed. increase '10' to decrease speed
+        #         # perhaps can make this based on active gun? ie phantom shoots faster so need to pull down faster...
+        #         time.sleep(5/1000)
+        #     else:
+        #         # FIRST: X-axis (POSITIVE = move right, NEGATIVE = move left)
+        #         # SECOND: Y-axis (POSITIVE = move down, NEGATIVE = move up)
+        #         # THIRD: unknown...something to do with mouse wheel
+        #         serial.write(pack('bbb', 1, 6, -1))
+        #     i += 1
 
 
 def state_loop():
@@ -98,10 +105,13 @@ def main_loop():
                 left_mouse_down_event.clear()
 
 
-if __name__ == "__main__":
+def setup(data):
+    data = str(data)
+    print(f"Data Received from NN: {data}")
+
     thread1 = threading.Thread(target=state_loop)
     thread2 = threading.Thread(target=main_loop)
-    thread3 = threading.Thread(target=recoil_loop)
+    thread3 = threading.Thread(target=recoil_loop, args=(data,))
     thread1.start()
     thread2.start()
     thread3.start()
