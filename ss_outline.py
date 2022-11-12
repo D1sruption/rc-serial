@@ -1,7 +1,6 @@
 import struct
 import time
 from random import randint
-
 import cv2
 import mss.tools
 import numpy as np
